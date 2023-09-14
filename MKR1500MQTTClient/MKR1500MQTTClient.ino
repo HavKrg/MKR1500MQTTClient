@@ -1,7 +1,7 @@
 /*
 
-  This sketch connects to mqtt-broker a MKR NB 1500 board, and publishes a sensor reading.
-  It does not work with 
+  This sketch connects a MKR NB 1500 board to an mqtt-broker, and publishes a sensor reading.
+  It does not work with brokers that require TLS.
 
   MQTT-configuration and pin-number for SIM is located in arduino_secrets.h
 
