@@ -1,5 +1,6 @@
 #define SECRET_PINNUMBER     ""
 
+#define MQTT_CLIENT "mkr_1500_hv_inntak"
 #define MQTT_BROKER "broker.hivemq.com" // broker address
 #define MQTT_USER ""                    // username for authentication
 #define MQTT_PASSWORD ""                // password for authentication

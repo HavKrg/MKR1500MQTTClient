@@ -1,12 +1,20 @@
 /*
 
- This sketch connects to mqtt-broker a MKR NB 1500 board, and publishes a sensor reading.
+  This sketch connects to mqtt-broker a MKR NB 1500 board, and publishes a sensor reading.
+  It does not work with 
+
+  MQTT-configuration and pin-number for SIM is located in arduino_secrets.h
+
+  Configuration for sleep timer and analogRead-resolution is located in config.h
+
+  I also prefer to have my sensor-configuration in the config.h, but can be placed elsewhere, 
+  or simply put straight into the x.createSensor()
 
   Parts:
  * MKR NB 1500 board
  * Antenna
  * SIM card with a data plan
- * MKR Relay shield
+ * MKR Relay shield (not a requirement, I just like having the relays and screw terminals).
 */
 
 // libraries
@@ -17,16 +25,13 @@
 #include "config.h"
 #include "Sensor.h"
 
-// Please enter your sensitive data in the Secret tab or arduino_secrets.h
-// PIN Number
-const char PINNUMBER[] = SECRET_PINNUMBER;
-
-// initialize the library instance
+// initialize the library instances
 NBClient client;
 NB modem;
 GPRS gprs;
 PubSubClient mqttClient(client);
 
+// functions
 void initializeModem();
 void connectToGPRS();
 void connectToMqttServer();
@@ -78,13 +83,12 @@ void loop() {
   
   Serial.println("\nnew loop");
 
-  initializeModem();                // initialize the modem
-  connectToGPRS();                  // connect to cellular network
-  connectToMqttServer();            // connect to MQTT-broker
-  readSensorData(waterLevelSensor); // read sensor-data
-  publishSensorData(waterLevelSensor); // publish sensor-data       
-  //sleepBoard(TIMEBETWEENREADING);   // put arduino in sleep mode
-  delay(60000);
+  initializeModem();                    // initialize the modem
+  connectToGPRS();                      // connect to cellular network
+  connectToMqttServer();                // connect to MQTT-broker
+  readSensorData(waterLevelSensor);     // read sensor-data
+  publishSensorData(waterLevelSensor);  // publish sensor-data       
+  sleepBoard(TIMEBETWEENREADING);       // put arduino in sleep mode
 }
 
 
@@ -95,7 +99,7 @@ void initializeModem() {
     while (modem.status() != NB_READY) 
     {
       Serial.print("Initializing modem... ");
-      if (modem.begin("", true, true) == NB_READY) 
+      if (modem.begin(SECRET_PINNUMBER, true, true) == NB_READY) 
       {
         Serial.println("OK");
       } else {
@@ -173,7 +177,11 @@ void readSensorData(Sensor &sensor) {
 // publishes sensordata to mqtt-broker
 void publishSensorData(Sensor sensor) {
   sprintf(messageBuffer, "%d", sensor.lastReadingScaled);
-  Serial.print("Publishing sensordata... ");
+  Serial.print("Publishing sensordata to ");
+  Serial.print(MQTT_BROKER);
+  Serial.print("/");
+  Serial.print(sensor.mqttTopic);
+  Serial.print("... ");
   if (mqttClient.publish(sensor.mqttTopic, messageBuffer, sensor.retainReading))  // publish to the topic
     Serial.println("OK");
   else
@@ -185,7 +193,10 @@ void sleepBoard(int timeToSleepInSeconds)
 {
   Serial.print("going to sleep for ");
   Serial.print(timeToSleepInSeconds);
-  Serial.println(" seconds...");
+  Serial.print(" seconds (");
+  Serial.print(timeToSleepInSeconds/60);
+  Serial.println(" minutes)...");
+  
   Serial.flush();
   Serial.end();
   LowPower.sleep(timeToSleepInSeconds*1000);      

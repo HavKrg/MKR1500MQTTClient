@@ -1,6 +1,4 @@
 // name for the MQTT-client
-#define MQTT_CLIENT "hv_inntak_mkr1500"
-
 
 // Sensor configuration for a waterlevel-sensor
 #define WATERLEVELSENSOR_RELAYPIN 1 // relay pin for the sensor -1 if it doesn't use a relay
